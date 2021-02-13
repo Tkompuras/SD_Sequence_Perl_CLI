@@ -16,9 +16,12 @@ This is my attempt to create a very basic command line interface to find Shine-D
 ### Installation
 * Download the repo
   ```sh
-     git clone https://github.com/Tkompuras/SD_Sequence_Perl_CLI.git
+  git clone https://github.com/Tkompuras/SD_Sequence_Perl_CLI.git
   ```
 * OR just download the shine_dalgarno.pl file
 
 ### Usage
-*To do
+* To do
+
+### Usage
+* Add start and end locations to the output
