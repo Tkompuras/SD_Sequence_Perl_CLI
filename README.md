@@ -23,5 +23,6 @@ This is my attempt to create a very basic command line interface to find Shine-D
 ### Usage
 * To do
 
-### Usage
+### To do
 * Add start and end locations to the output
+* Error checking
