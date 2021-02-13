@@ -27,89 +27,72 @@ shine_dalgarno - An attempt to code a very basic command line interface to find 
 
 #------------------------------------------------------------------------------------------------------------------------------------------------
 
-# Subroutine: Opening the fasta file
+# Opening the fasta file
 my $boolean_file_opening = 1;
-sub file_opening {
-  while($boolean_file_opening) {
+my $desc_line = '';
+while($boolean_file_opening) {
 
-    if(-e $input_file) {
-      open(FASTA,'<',$input_file) || die color("red"), "Can't open the file", color("reset");
-      print color("bold green"), "\nFile opened successfully.\n", color("reset");
+if(-e $input_file) {
+  open(FASTA,'<',$input_file) || die color("red"), "Can't open the file", color("reset");
+  #print color("bold green"), "\nFile opened successfully.\n", color("reset");
 
-      my $desc_line = <FASTA>;
-      print color("cyan"), "Description line : \n", color("reset");
-      print $desc_line."\n";
+  $desc_line = <FASTA>;
+  chomp $desc_line;
+  $desc_line =~ s/,/ /;
+  print color("cyan"), "Description line : \n", color("reset");
+  print $desc_line."\n";
 
-      $boolean_file_opening = 0;
-    } else {
-      print color("red"), "This file does not exist\n", color("reset");
-    }
-  }
+  $boolean_file_opening = 0;
+} else {
+  die color("red"), "This file does not exist\n", color("reset");
+}
 }
 
-# Subroutine: Making the matches and counting them
+# Making the matches and counting them
 my $count = 0;
 my @matches;
 my $file_contents = '';
-sub matching {
 
-	while(my $line = <FASTA>) {
-      chomp $line;
-      $file_contents = $file_contents.$line;
-  }
-
-  # Matching Pattern
-  while ($file_contents =~ /([TA][AC]AGGA[GA][GA][ATGC]{4,10}ATG(\w\w\w)*?(TAA|TGA|TAG))/g) {
-      push @matches, $1;
-      $count += 1;
-  }
-
-  print color("bold cyan"), "\nThere have been $count matches.\n", color("reset");
-
+while(my $line = <FASTA>) {
+  chomp $line;
+  $file_contents = $file_contents.$line;
 }
 
-# Subroutine: Calculating the reverse complement matches
+# Matching Pattern
+while ($file_contents =~ /([TA][AC]AGGA[GA][GA][ATGC]{4,10}ATG(\w\w\w)*?(TAA|TGA|TAG))/g) {
+  push @matches, $1;
+  $count += 1;
+}
+
+print color("bold cyan"), "\nThere have been $count matches.\n", color("reset");
+
+
+# Calculating the reverse complement matches
 my @reverse_complement;
-sub reverse_matches {
-	my @reverse;
-	my $reverse;
+my @reverse;
+my $reverse;
 
-	foreach (@matches) {
-		$reverse = reverse $_;
-		push @reverse, $reverse;
-	}
-
-	foreach (@reverse) {
-		$_ =~ tr/ATGC/TACG/;
-		push @reverse_complement, $_;
-	}
-
+foreach (@matches) {
+	$reverse = reverse $_;
+	push @reverse, $reverse;
 }
 
-# Subroutine: File output
-sub file_output {
-	my $output_file = $input_file.'-output.txt';
-	open(OUTPUT, '>', $output_file) or die $!;
-	for (my $i=0; $i<@matches; $i++) {
-		print OUTPUT "$matches[$i]\n#\n$reverse_complement[$i]\n";
-		print OUTPUT "------------------------------------------------------------------------------\n";
-	}
+foreach (@reverse) {
+	$_ =~ tr/ATGC/TACG/;
+	push @reverse_complement, $_;
 }
 
-# Subroutine: Basic file closing
-sub file_closing {
-  
-  close(FASTA) || die color("red"), "close failed: $!", color("reset");
-  print color("bold green"), "\nFile closed successfully.\n", color("reset");
-  print color("bold blue"), "\nOutput file has been generated - $input_file-output.txt\n", color("reset");
-
+# File output
+my $output_file = 'output.csv';
+open(OUTPUT, '>', $output_file) or die $!;
+print OUTPUT "$desc_line\n";
+print OUTPUT "Match #,Length,Match Sequence, Reverse-Complement Sequence\n";
+for (my $i=0; $i<@matches; $i++) {
+	my $length = length($matches[$i]);
+	print OUTPUT "${\($i+1)},$length,$matches[$i],$reverse_complement[$i]\n";
 }
 
-
-
-# Subroutine: MAIN
-file_opening();
-matching();
-reverse_matches();
-file_output();
-file_closing();
+# Basic file closing
+close(FASTA) || die color("red"), "close failed: $!", color("reset");
+#print color("bold green"), "\nFile closed successfully.\n", color("reset");
+print color("bold blue"), "\nOutput file has been generated - $input_file-output.txt\n", color("reset");
